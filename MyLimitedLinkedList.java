@@ -30,7 +30,9 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new InputMismatchException("Type mismatch");
         }
 
-        // ...
+        // call addLast since default behavior will be to add elements to the end of the list; handles first case and sz++
+        addLast(element);
+
         return true; // (as specified by Collection.add(E))
     }
 
@@ -46,17 +48,56 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new InputMismatchException("Type mismatch");
         }
 
-        // ...
+        //if index is closer to the front of the list then iterate from the front to add it so we can save a few pennies
+        if(index < (sz/2) ){
+            MyNode<T> iteratorNode = dummyHead.next;
+            int i = 0;
+            while (i != index) {
+                iteratorNode = iteratorNode.next;
+                ++i;
+            }
+            
+            //set our t
+            iteratorNode =  new MyNode<T>(element, iteratorNode, iteratorNode.prev);
+
+        }
     }
 
     // Not from MyList interface
     public void addFirst(T element) {
-        // ...
+        if (first) {
+            dataType = element.getClass();
+            first = false;
+        }
+        if (element.getClass() != dataType) {
+            throw new InputMismatchException("Type mismatch");
+        }
+        //make the first and only element both the head and tail
+        if(first)
+            dummyHead = dummyTail = new MyNode<T>(element);
+        else{
+            //set the first prev link = to element, and link element's next node to dummHead
+            dummyHead.prev = new MyNode<T>(element,dummyHead,null);
+            //now set dummyhead to its prev node so that it's first in the list
+            dummyHead = dummyHead.prev;
+        }
+
+        sz++;
     }
 
     // Not from MyList interface
     public void addLast(T element) {
-        // ...
+        // make the first and only element both the head and tail
+        if(first)
+            dummyHead = dummyTail = new MyNode<T>(element);
+        else{
+            //set the last next link = to element, and link element's prev node to dummytail
+            dummyTail.next = new MyNode<T>(element,null,dummyTail);
+            //now set dummytail to its next node so that it's last in the list
+            dummyTail = dummyTail.next;
+        }
+
+        sz++;
     }
 
     public void clear() {
@@ -117,8 +158,8 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
     }
 
     public boolean isEmpty() {
-        // ...
-        return true;
+        //if size hasn't been incremented then the list is empty
+        return (sz == 0);
     }
 
     public int lastIndexOf(T element) {
@@ -193,8 +234,8 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
     }
 
     public int size() {
-        // ...
-        return 0;
+        // return the size of the linkedlist
+        return sz;
     }
 
     // Helper functions
