@@ -49,23 +49,10 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         }
         //create a container to hold the helper functions returned node
         MyNode<T> indexedNode;
+        indexedNode = index < (sz/2) ? iterateFromFront(index): iterateFromRear(index);
+        
+        indexedNode.prev = indexedNode.prev.next = new MyNode<T>(element, indexedNode, indexedNode.prev);
 
-        //if index is closer to the front of the list then iterate from the front to add it so we can save a few pennies
-        if(index < (sz/2) ){
-            //set the returned node to this dummy variable
-            indexedNode = iterateFromFront(index);
-
-            //set both the of next and prev nodes pointers to the new node
-            //this will add the node, but not replace the previous node
-            indexedNode.prev = indexedNode.prev.next = new MyNode<T>(element, indexedNode, indexedNode.prev);
-        }
-        //iterate from the back to save a few pennies
-        else{
-
-            indexedNode = iterateFromRear(index);
-
-            indexedNode.prev = indexedNode.prev.next = new MyNode<T>(element, indexedNode, indexedNode.prev);
-        }
 
         sz++;
     }
@@ -80,7 +67,7 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new InputMismatchException("Type mismatch");
         }
         //dummyhead will always be the barrier, set both the next and the next's prev pointers to this new node
-        dummyHead.next = dummyHead.next.prev = new MyNode<T>(element, dummyHead.next, dummyHead.prev);
+        dummyHead.next = dummyHead.next.prev = new MyNode<T>(element, dummyHead.next, dummyHead q1`);
 
         sz++;
     }
@@ -92,8 +79,6 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         dummyTail.prev = dummyTail.prev.next = new MyNode<T>(element,dummyTail,dummyTail.prev);
         sz++;
     }
-
-
 
     public void clear() {
         //point these back to the variables to donate everything to the garbage collecter and reset
@@ -155,7 +140,9 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             if(iteratorNode.val == element){
                 here = i;
                 break;
-            }}
+            }
+            iteratorNode = iteratorNode.next;
+        }
         return here;
     }
 
@@ -178,7 +165,9 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             if(iteratorNode.val == element){
                 here = i;
                 break;
-            }}
+            }
+            iteratorNode = iteratorNode.next;
+        }
         return here;
     }
 
@@ -187,12 +176,16 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new IndexOutOfBoundsException();
         }
 
-        // ...
+        //create a new index node and iterate with the cheapest option
+        MyNode<T> indexedNode;
+        indexedNode = index < (sz/2) ? iterateFromFront(index): iterateFromRear(index);
 
-        T ret = null;
-        // ...
 
-        return null;
+        T ret = indexedNode.val;
+        indexedNode.prev.next = indexedNode.next;
+        indexedNode.next.prev = indexedNode.prev;
+
+        return ret;
     }
 
     public boolean remove(T element) {
@@ -200,8 +193,23 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new InputMismatchException("Type mismatch");
         }
 
-        // ...
-        return false;
+        //create a container for our nodes to loop through
+        MyNode<T> iteratorNode = dummyHead.next;
+        //loop through the list and check if element is here
+        boolean here = false;
+        //start from the back and break when it's found
+        for(int i = sz-1; i >= 0; i--){
+            if(iteratorNode.val == element){
+                here = true;
+                break;
+            }
+            iteratorNode = iteratorNode.next;
+        }
+    
+        iteratorNode.prev.next = iteratorNode.next;
+        iteratorNode.next.prev = iteratorNode.prev;        
+        
+        return here;
     }
 
     // Not from MyList interface
@@ -210,10 +218,11 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new NoSuchElementException();
         }
 
-        T ret = null;
-        // ...
-
-        return null;
+        T ret = dummyHead.next.val;
+        //change the pointers to exlcude dummyHead.next using the .next.ext node
+        dummyHead.next = dummyHead.next.next;
+        dummyHead.next.prev = dummyHead;
+        return ret;
     }
 
     // Not from MyList interface
@@ -239,12 +248,14 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new InputMismatchException("Type mismatch");
         }
 
-        // ...
+        //create a new index node and iterate with the cheapest option
+        MyNode<T> indexedNode;
+        indexedNode = index < (sz/2) ? iterateFromFront(index): iterateFromRear(index);
 
-        T ret = null;
-        // ...
+        T ret = indexedNode.val;
+        indexedNode.val = element;
 
-        return null;
+        return ret;
     }
 
     public int size() {
