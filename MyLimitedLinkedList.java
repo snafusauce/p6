@@ -30,7 +30,7 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new InputMismatchException("Type mismatch");
         }
 
-        // call addLast since default behavior will be to add elements to the end of the list; handles first case and sz++
+        // call addLast since default behavior will be to add elements to the end of the list; handles sz++
         addLast(element);
 
         return true; // (as specified by Collection.add(E))
@@ -47,20 +47,27 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         if (element.getClass() != dataType) {
             throw new InputMismatchException("Type mismatch");
         }
+        //create a container to hold the helper functions returned node
+        MyNode<T> indexedNode;
 
         //if index is closer to the front of the list then iterate from the front to add it so we can save a few pennies
         if(index < (sz/2) ){
-            MyNode<T> iteratorNode = dummyHead.next;
-            int i = 0;
-            while (i != index) {
-                iteratorNode = iteratorNode.next;
-                ++i;
-            }
-            
-            //set our t
-            iteratorNode =  new MyNode<T>(element, iteratorNode, iteratorNode.prev);
+            //set the returned node to this dummy variable
+            indexedNode = iterateFromFront(index);
 
+            //set both the of next and prev nodes pointers to the new node
+            //this will add the node, but not replace the previous node
+            indexedNode.prev = indexedNode.prev.next = new MyNode<T>(element, indexedNode, indexedNode.prev);
         }
+        //iterate from the back to save a few pennies
+        else{
+
+            indexedNode = iterateFromRear(index);
+
+            indexedNode.prev = indexedNode.prev.next = new MyNode<T>(element, indexedNode, indexedNode.prev);
+        }
+
+        sz++;
     }
 
     // Not from MyList interface
@@ -72,56 +79,47 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         if (element.getClass() != dataType) {
             throw new InputMismatchException("Type mismatch");
         }
-        //make the first and only element both the head and tail
-        if(first)
-            dummyHead = dummyTail = new MyNode<T>(element);
-        else{
-            //set the first prev link = to element, and link element's next node to dummHead
-            dummyHead.prev = new MyNode<T>(element,dummyHead,null);
-            //now set dummyhead to its prev node so that it's first in the list
-            dummyHead = dummyHead.prev;
-        }
+        //dummyhead will always be the barrier, set both the next and the next's prev pointers to this new node
+        dummyHead.next = dummyHead.next.prev = new MyNode<T>(element, dummyHead.next, dummyHead.prev);
 
         sz++;
     }
 
     // Not from MyList interface
     public void addLast(T element) {
-        // make the first and only element both the head and tail
-        if(first)
-            dummyHead = dummyTail = new MyNode<T>(element);
-        else{
-            //set the last next link = to element, and link element's prev node to dummytail
-            dummyTail.next = new MyNode<T>(element,null,dummyTail);
-            //now set dummytail to its next node so that it's last in the list
-            dummyTail = dummyTail.next;
-        }
-
+        
+        //this will add in between the previous two nodes
+        dummyTail.prev = dummyTail.prev.next = new MyNode<T>(element,dummyTail,dummyTail.prev);
         sz++;
     }
 
+
+
     public void clear() {
-        // ...
+        //point these back to the variables to donate everything to the garbage collecter and reset
+        dummyHead.next = dummyTail;
+        dummyTail.prev = dummyHead;
     }
 
     public boolean contains(T element) {
         if (!first && element.getClass() != dataType) {
             throw new InputMismatchException("Type mismatch");
         }
+        //variable for if the element is here in our list
+        boolean here = false;
 
-        // ...
-        return false;
+        //callindexof and it's -1 then that means it wasn't in the list
+        here = indexOf(element) ==-1 ? false: true;
+    
+        return here;
     }
 
     public T get(int index) {
         if (index < 0 || sz <= index) {
             throw new IndexOutOfBoundsException();
         }
-
-        MyNode<T> iteratorNode = null;
-        // ...
-
-        return null;
+        //check where to start and then return with the cheaper method
+        return (index < (sz/2)) ? iterateFromFront(index).val : iterateFromRear(index).val;
     }
 
     // Not from MyList interface
@@ -130,10 +128,8 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new NoSuchElementException();
         }
 
-        T ret = null;
-        // ...
-
-        return null;
+        //return the value of whatever dummyHead points to
+        return dummyHead.next.val;
     }
 
     // Not from MyList interface
@@ -142,10 +138,8 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new NoSuchElementException();
         }
 
-        T ret = null;
-        // ...
-
-        return null;
+        //return the value of whatever dummytail points to
+        return dummyTail.prev.val;
     }
 
     public int indexOf(T element) {
@@ -153,8 +147,16 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new InputMismatchException("Type mismatch");
         }
 
-        // ...
-        return -1;
+        //create a container for our nodes to loop through
+        MyNode<T> iteratorNode = dummyHead.next;
+        //loop through the list and check if element is here
+        int here = -1;
+        for(int i =0; i < sz; i++){
+            if(iteratorNode.val == element){
+                here = i;
+                break;
+            }}
+        return here;
     }
 
     public boolean isEmpty() {
@@ -167,8 +169,17 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new InputMismatchException("Type mismatch");
         }
 
-        // ...
-        return -1;
+        //create a container for our nodes to loop through
+        MyNode<T> iteratorNode = dummyHead.next;
+        //loop through the list and check if element is here
+        int here = -1;
+        //start from the back and break when it's found
+        for(int i = sz-1; i >= 0; i--){
+            if(iteratorNode.val == element){
+                here = i;
+                break;
+            }}
+        return here;
     }
 
     public T remove(int index) {
@@ -211,10 +222,13 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
             throw new NoSuchElementException();
         }
 
-        T ret = null;
-        // ...
+        T ret = dummyTail.prev.val;
+        //change the pointers to exclude prev and let the garbage collecter handle the rest
+        dummyTail.prev.prev.next = dummyTail;
+        dummyTail.prev = dummyTail.prev.prev;
+       
 
-        return null;
+        return ret;
     }
 
     public T set(int index, T element) {
