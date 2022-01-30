@@ -51,8 +51,10 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         MyNode<T> indexedNode;
         indexedNode = index < (sz/2) ? iterateFromFront(index): iterateFromRear(index);
         
-        indexedNode.prev = indexedNode.prev.next = new MyNode<T>(element, indexedNode, indexedNode.prev);
-
+        //the previous node will point to this new node, it will point to index and point back to prev
+        indexedNode.prev.next = new MyNode<T>(element, indexedNode, indexedNode.prev);
+        //the indexed node will point back to the new node
+        indexedNode.prev = indexedNode.prev.next;
 
         sz++;
     }
@@ -66,8 +68,10 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         if (element.getClass() != dataType) {
             throw new InputMismatchException("Type mismatch");
         }
-        //dummyhead will always be the barrier, set both the next and the next's prev pointers to this new node
-        dummyHead.next = dummyHead.next.prev = new MyNode<T>(element, dummyHead.next, dummyHead q1`);
+        //point the prev first node back to this new node, new node points to the old first nod eand back to head
+        dummyHead.next.prev = new MyNode<T>(element, dummyHead.next, dummyHead);
+        //change the first node by pointing to the new node using the reference we just set
+        dummyHead.next = dummyHead.next.prev;
 
         sz++;
     }
@@ -94,8 +98,9 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         boolean here = false;
 
         //callindexof and it's -1 then that means it wasn't in the list
-        here = indexOf(element) ==-1 ? false: true;
-    
+        if(indexOf(element) !=-1 )
+            here = true;
+
         return here;
     }
 
@@ -103,8 +108,12 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         if (index < 0 || sz <= index) {
             throw new IndexOutOfBoundsException();
         }
+        T ourValue;
+
         //check where to start and then return with the cheaper method
-        return (index < (sz/2)) ? iterateFromFront(index).val : iterateFromRear(index).val;
+        ourValue = (index < (sz/2)) ? iterateFromFront(index).val : iterateFromRear(index).val;
+        
+        return ourValue;
     }
 
     // Not from MyList interface
@@ -137,7 +146,7 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         //loop through the list and check if element is here
         int here = -1;
         for(int i =0; i < sz; i++){
-            if(iteratorNode.val == element){
+            if(iteratorNode.val ==null ? element==null : iteratorNode.val.equals(element)){
                 here = i;
                 break;
             }
@@ -162,7 +171,7 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         int here = -1;
         //start from the back and break when it's found
         for(int i = sz-1; i >= 0; i--){
-            if(iteratorNode.val == element){
+            if(iteratorNode.val ==null ? element==null : iteratorNode.val.equals(element)){
                 here = i;
                 break;
             }
@@ -199,7 +208,7 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         boolean here = false;
         //start from the back and break when it's found
         for(int i = sz-1; i >= 0; i--){
-            if(iteratorNode.val == element){
+            if(iteratorNode.val ==null ? element==null : iteratorNode.val.equals(element)){
                 here = true;
                 break;
             }
@@ -233,10 +242,9 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
 
         T ret = dummyTail.prev.val;
         //change the pointers to exclude prev and let the garbage collecter handle the rest
-        dummyTail.prev.prev.next = dummyTail;
         dummyTail.prev = dummyTail.prev.prev;
-       
-
+        dummyTail.prev.prev.next = dummyTail;
+    
         return ret;
     }
 
