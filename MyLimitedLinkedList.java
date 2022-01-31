@@ -51,10 +51,14 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         MyNode<T> indexedNode;
         indexedNode = index < (sz/2) ? iterateFromFront(index): iterateFromRear(index);
         
-        //the previous node will point to this new node, it will point to index and point back to prev
-        indexedNode.prev.next = new MyNode<T>(element, indexedNode, indexedNode.prev);
+        //creating this new node and pointing to the adjacent nodes
+        MyNode<T> myNode = new MyNode<T>(element, indexedNode, indexedNode.prev);
+
+        //the previous node will point to this new node
+        indexedNode.prev.next = myNode;
+
         //the indexed node will point back to the new node
-        indexedNode.prev = indexedNode.prev.next;
+        indexedNode.prev = myNode;
 
         sz++;
     }
@@ -68,19 +72,30 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         if (element.getClass() != dataType) {
             throw new InputMismatchException("Type mismatch");
         }
+
+        //creating this new node and pointing it to the adjacent nodes
+        MyNode<T> myNode = new MyNode<T>(element, dummyHead.next, dummyHead);
+
         //point the prev first node back to this new node, new node points to the old first nod eand back to head
-        dummyHead.next.prev = new MyNode<T>(element, dummyHead.next, dummyHead);
+        dummyHead.next.prev = myNode;
+
         //change the first node by pointing to the new node using the reference we just set
-        dummyHead.next = dummyHead.next.prev;
+        dummyHead.next = myNode;
 
         sz++;
     }
 
     // Not from MyList interface
     public void addLast(T element) {
-        
-        //this will add in between the previous two nodes
-        dummyTail.prev = dummyTail.prev.next = new MyNode<T>(element,dummyTail,dummyTail.prev);
+        //creating this new node and pointing it to the adjacent nodes
+        MyNode<T> myNode = new MyNode<T>(element,dummyTail,dummyTail.prev);
+
+        //point the old prev to the new node
+        dummyTail.prev.next = myNode;
+
+        //point dummytail back to the new node
+        dummyTail.prev = myNode;
+
         sz++;
     }
 
@@ -88,6 +103,9 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         //point these back to the variables to donate everything to the garbage collecter and reset
         dummyHead.next = dummyTail;
         dummyTail.prev = dummyHead;
+
+        //reset the size
+        sz = 0;
     }
 
     public boolean contains(T element) {
@@ -166,7 +184,7 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         }
 
         //create a container for our nodes to loop through
-        MyNode<T> iteratorNode = dummyHead.next;
+        MyNode<T> iteratorNode = dummyTail.prev;
         //loop through the list and check if element is here
         int here = -1;
         //start from the back and break when it's found
@@ -175,7 +193,7 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
                 here = i;
                 break;
             }
-            iteratorNode = iteratorNode.next;
+            iteratorNode = iteratorNode.prev;
         }
         return here;
     }
@@ -194,6 +212,7 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         indexedNode.prev.next = indexedNode.next;
         indexedNode.next.prev = indexedNode.prev;
 
+        sz--;
         return ret;
     }
 
@@ -218,6 +237,7 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         iteratorNode.prev.next = iteratorNode.next;
         iteratorNode.next.prev = iteratorNode.prev;        
         
+        sz--;
         return here;
     }
 
@@ -231,6 +251,9 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         //change the pointers to exlcude dummyHead.next using the .next.ext node
         dummyHead.next = dummyHead.next.next;
         dummyHead.next.prev = dummyHead;
+
+        sz--;
+
         return ret;
     }
 
@@ -243,7 +266,9 @@ public class MyLimitedLinkedList<T> implements MyList<T> {
         T ret = dummyTail.prev.val;
         //change the pointers to exclude prev and let the garbage collecter handle the rest
         dummyTail.prev = dummyTail.prev.prev;
-        dummyTail.prev.prev.next = dummyTail;
+        dummyTail.prev.next = dummyTail;
+
+        sz--;
     
         return ret;
     }
